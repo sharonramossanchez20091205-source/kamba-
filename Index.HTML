@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kanban LMS - Creador Web con IA</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+    }
+    .kanban-column {
+      min-height: 70vh;
+    }
+    .dragging {
+      opacity: 0.4;
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-indigo-900 text-white shadow-lg py-4 px-6 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <i data-lucide="layout-dashboard" class="w-7 h-7 text-indigo-400"></i>
+      <div>
+        <h1 class="text-xl font-bold tracking-wide">Kanban LMS: AI Web Builder</h1>
+        <p class="text-xs text-indigo-200">Gestión de Desarrollo y Contenidos</p>
+      </div>
+    </div>
+    <button id="btnOpenModal" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span>Nueva Tarea</span>
+    </button>
+  </header>
+
+  <!-- Contenedor Principal / Columnas -->
+  <main class="flex-1 p-6 overflow-x-auto">
+    <div id="board" class="grid grid-cols-1 md:grid-cols-5 gap-4 min-w-[1200px]">
+      
+      <!-- Columna: Backlog -->
+      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-slate-300 pb-2">
+          <span class="font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-slate-500"></span> Backlog
+          </span>
+          <span id="count-Backlog" class="text-xs font-semibold bg-slate-300 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col-Backlog" data-status="Backlog" class="kanban-column flex-1 flex flex-col gap-3"></div>
+      </div>
+
+      <!-- Columna: Asignado a -->
+      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-blue-400 pb-2">
+          <span class="font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-blue-500"></span> Asignado a
+          </span>
+          <span id="count-Asignado a" class="text-xs font-semibold bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col-Asignado a" data-status="Asignado a" class="kanban-column flex-1 flex flex-col gap-3"></div>
+      </div>
+
+      <!-- Columna: En progreso -->
+      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-amber-400 pb-2">
+          <span class="font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span> En progreso
+          </span>
+          <span id="count-En progreso" class="text-xs font-semibold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col-En progreso" data-status="En progreso" class="kanban-column flex-1 flex flex-col gap-3"></div>
+      </div>
+
+      <!-- Columna: En revisión -->
+      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-purple-400 pb-2">
+          <span class="font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-purple-500"></span> En revisión
+          </span>
+          <span id="count-En revisión" class="text-xs font-semibold bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col-En revisión" data-status="En revisión" class="kanban-column flex-1 flex flex-col gap-3"></div>
+      </div>
+
+      <!-- Columna: Finalizado -->
+      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-emerald-400 pb-2">
+          <span class="font-bold text-slate-700 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Finalizado
+          </span>
+          <span id="count-Finalizado" class="text-xs font-semibold bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div id="col-Finalizado" data-status="Finalizado" class="kanban-column flex-1 flex flex-col gap-3"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Modal para Crear Nueva Tarea -->
+  <div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
+      <button id="btnCloseModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+        <i data-lucide="file-plus" class="text-indigo-600"></i> Nueva Tarea Kanban
+      </h2>
+
+      <form id="taskForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Título de la Actividad</label>
+          <input type="text" id="title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Ej: Crear Prompting Guide para ChatGPT">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
+          <textarea id="description" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Detalles específicos sobre el desarrollo..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Responsable</label>
+            <select id="assignee" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Sin asignar">Sin asignar</option>
+              <option value="Alex Rivera">Alex Rivera (Lead)</option>
+              <option value="María Gómez">María Gómez (Dev)</option>
+              <option value="Carlos Ruiz">Carlos Ruiz (Designer)</option>
+              <option value="Elena Torres">Elena Torres (Prompt Eng)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado Inicial</label>
+            <select id="status" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Backlog">Backlog</option>
+              <option value="Asignado a">Asignado a</option>
+              <option value="En progreso">En progreso</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de Inicio</label>
+            <input type="date" id="startDate" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de Fin</label>
+            <input type="date" id="endDate" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">URL Entregable / Figma / GitHub</label>
+          <input type="url" id="url" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="https://...">
+        </div>
+
+        <div class="flex justify-end gap-3 pt-3 border-t">
+          <button type="button" id="btnCancel" class="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-medium">Cancelar</button>
+          <button type="submit" id="btnSave" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow">Guardar Tarea</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Lógica App -->
+  <script>
+    // URL integrada de tu Google Apps Script
+    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuHCHTcF0XK0Le2BGkjR5uvI2mQN7t6Fls4FXP04Bw0k6lEHB5fm0kzwZ22RL379cKJw/exec';
+
+    let tasks = [];
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchTasks();
+      setupEventListeners();
+      setupDragAndDrop();
+    });
+
+    // Modal Control
+    const modal = document.getElementById('taskModal');
+    function openModal() { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+    function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); document.getElementById('taskForm').reset(); }
+
+    function setupEventListeners() {
+      document.getElementById('btnOpenModal').addEventListener('click', openModal);
+      document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+      document.getElementById('btnCancel').addEventListener('click', closeModal);
+
+      document.getElementById('taskForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveNewTask();
+      });
+    }
+
+    // JSONP para evitar CORS al consultar datos con GET desde Apps Script
+    function fetchTasks() {
+      const script = document.createElement('script');
+      script.src = `${GAS_WEB_APP_URL}?action=getTasks&callback=handleTasksResponse`;
+      document.body.appendChild(script);
+    }
+
+    // Callback llamado por la respuesta JSONP
+    window.handleTasksResponse = function(response) {
+      if (response.status === 'success') {
+        tasks = response.data;
+        renderBoard();
+      } else {
+        alert('Error al obtener tareas: ' + response.message);
+      }
+    };
+
+    // Renderizar tarjetas en las columnas
+    function renderBoard() {
+      const columns = ['Backlog', 'Asignado a', 'En progreso', 'En revisión', 'Finalizado'];
+      
+      columns.forEach(status => {
+        const colContainer = document.getElementById(`col-${status}`);
+        colContainer.innerHTML = '';
+
+        const statusTasks = tasks.filter(t => t.status === status);
+        document.getElementById(`count-${status}`).innerText = statusTasks.length;
+
+        statusTasks.forEach(task => {
+          const card = createCardElement(task);
+          colContainer.appendChild(card);
+        });
+      });
+      
+      lucide.createIcons();
+    }
+
+    // HTML de cada tarjeta
+    function createCardElement(task) {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-grab border border-slate-200/60 active:cursor-grabbing';
+      card.draggable = true;
+      card.dataset.id = task.id;
+
+      card.innerHTML = `
+        <h3 class="font-semibold text-slate-800 text-sm mb-1">${task.title}</h3>
+        <p class="text-xs text-slate-500 mb-3 line-clamp-2">${task.description || 'Sin descripción'}</p>
+
+        <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-1 font-medium text-slate-600">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-500"></i> ${task.assignee}
+            </span>
+            ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Link</a>` : ''}
+          </div>
+
+          ${task.startDate || task.endDate ? `
+            <div class="flex items-center gap-1 text-[11px] text-slate-400">
+              <i data-lucide="calendar" class="w-3 h-3"></i>
+              <span>${task.startDate \vert{}\vert{} '---'} al${task.endDate || '---'}</span>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
+
+      return card;
+    }
+
+    // Guardar Nueva Tarea mediante POST
+    function saveNewTask() {
+      const newTask = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        assignee: document.getElementById('assignee').value,
+        status: document.getElementById('status').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        url: document.getElementById('url').value
+      };
+
+      const btnSave = document.getElementById('btnSave');
+      btnSave.disabled = true;
+      btnSave.innerText = 'Guardando...';
+
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'createTask', task: newTask })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if(res.status === 'success') {
+          closeModal();
+          fetchTasks();
+        } else {
+          alert('Error al guardar: ' + res.message);
+        }
+      })
+      .catch(err => alert('Error de conexión: ' + err))
+      .finally(() => {
+        btnSave.disabled = false;
+        btnSave.innerText = 'Guardar Tarea';
+      });
+    }
+
+    // Drag and Drop Handlers
+    let draggedCardId = null;
+
+    function handleDragStart(e) {
+      draggedCardId = this.dataset.id;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      draggedCardId = null;
+    }
+
+    function setupDragAndDrop() {
+      const columns = document.querySelectorAll('.kanban-column');
+
+      columns.forEach(col => {
+        col.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          col.classList.add('bg-slate-300/50');
+        });
+
+        col.addEventListener('dragleave', () => {
+          col.classList.remove('bg-slate-300/50');
+        });
+
+        col.addEventListener('drop', (e) => {
+          e.preventDefault();
+          col.classList.remove('bg-slate-300/50');
+
+          const newStatus = col.dataset.status;
+          if (draggedCardId) {
+            updateTaskStatusOnBackend(draggedCardId, newStatus);
+          }
+        });
+      });
+    }
+
+    // Actualización de estado en Google Sheets mediante Apps Script
+    function updateTaskStatusOnBackend(taskId, newStatus) {
+      // Optimistic Update en Frontend
+      const taskIndex = tasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        tasks[taskIndex].status = newStatus;
+        renderBoard();
+      }
+
+      fetch(GAS_WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'updateStatus',
+          id: taskId,
+          newStatus: newStatus
+        })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status !== 'success') {
+          alert('Error al actualizar estado en el servidor');
+          fetchTasks(); // Revertir si hubo error
+        }
+      })
+      .catch(err => {
+        console.error('Error enviando petición:', err);
+        fetchTasks();
+      });
+    }
+  </script>
+</body>
+</html>
