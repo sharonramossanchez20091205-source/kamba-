@@ -36,7 +36,7 @@
         <p class="text-xs text-indigo-200">Gestión de Desarrollo y Contenidos</p>
       </div>
     </div>
-    <button id="btnOpenModal" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition">
+    <button id="btnOpenModal" type="button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition cursor-pointer">
       <i data-lucide="plus-circle" class="w-5 h-5"></i>
       <span>Nueva Tarea</span>
     </button>
@@ -107,7 +107,7 @@
   <!-- Modal para Crear Nueva Tarea -->
   <div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
-      <button id="btnCloseModal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+      <button id="btnCloseModal" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
 
@@ -165,7 +165,7 @@
 
         <div class="flex justify-end gap-3 pt-3 border-t">
           <button type="button" id="btnCancel" class="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-medium">Cancelar</button>
-          <button type="submit" id="btnSave" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow">Guardar Tarea</button>
+          <button type="submit" id="btnSave" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow cursor-pointer">Guardar Tarea</button>
         </div>
       </form>
     </div>
@@ -173,12 +173,10 @@
 
   <!-- JavaScript Lógica App -->
   <script>
-    // URL integrada de tu Google Apps Script
     const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuHCHTcF0XK0Le2BGkjR5uvI2mQN7t6Fls4FXP04Bw0k6lEHB5fm0kzwZ22RL379cKJw/exec';
 
     let tasks = [];
 
-    // Inicialización
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       fetchTasks();
@@ -186,49 +184,88 @@
       setupDragAndDrop();
     });
 
-    // Modal Control
     const modal = document.getElementById('taskModal');
-    function openModal() { modal.classList.remove('hidden'); modal.classList.add('flex'); }
-    function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); document.getElementById('taskForm').reset(); }
-
-    function setupEventListeners() {
-      document.getElementById('btnOpenModal').addEventListener('click', openModal);
-      document.getElementById('btnCloseModal').addEventListener('click', closeModal);
-      document.getElementById('btnCancel').addEventListener('click', closeModal);
-
-      document.getElementById('taskForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveNewTask();
-      });
+    
+    function openModal() { 
+      modal.classList.remove('hidden'); 
+      modal.classList.add('flex'); 
+    }
+    
+    function closeModal() { 
+      modal.classList.add('hidden'); 
+      modal.classList.remove('flex'); 
+      document.getElementById('taskForm').reset(); 
     }
 
-    // JSONP para evitar CORS al consultar datos con GET desde Apps Script
-    function fetchTasks() {
+    function setupEventListeners() {
+      const btnOpen = document.getElementById('btnOpenModal');
+      const btnClose = document.getElementById('btnCloseModal');
+      const btnCancel = document.getElementById('btnCancel');
+      const form = document.getElementById('taskForm');
+
+      if (btnOpen) btnOpen.addEventListener('click', openModal);
+      if (btnClose) btnClose.addEventListener('click', closeModal);
+      if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          saveNewTask();
+        });
+      }
+    }
+
+    // JSONP Generico
+    function jsonpRequest(params, callbackName) {
+      const oldScript = document.getElementById(callbackName);
+      if (oldScript) oldScript.remove();
+
+      const queryString = new URLSearchParams(params).toString();
       const script = document.createElement('script');
-      script.src = `${GAS_WEB_APP_URL}?action=getTasks&callback=handleTasksResponse`;
+      script.id = callbackName;
+      script.src = `${GAS_WEB_APP_URL}?${queryString}&callback=${callbackName}&t=${new Date().getTime()}`;
       document.body.appendChild(script);
     }
 
-    // Callback llamado por la respuesta JSONP
+    function fetchTasks() {
+      jsonpRequest({ action: 'getTasks' }, 'handleTasksResponse');
+    }
+
     window.handleTasksResponse = function(response) {
-      if (response.status === 'success') {
-        tasks = response.data;
+      if (response && response.status === 'success') {
+        tasks = response.data || [];
         renderBoard();
       } else {
-        alert('Error al obtener tareas: ' + response.message);
+        console.error('Error al obtener tareas:', response);
       }
     };
 
-    // Renderizar tarjetas en las columnas
+    window.handleCreateResponse = function(response) {
+      const btnSave = document.getElementById('btnSave');
+      if (btnSave) {
+        btnSave.disabled = false;
+        btnSave.innerText = 'Guardar Tarea';
+      }
+      closeModal();
+      fetchTasks();
+    };
+
+    window.handleUpdateResponse = function(response) {
+      fetchTasks();
+    };
+
     function renderBoard() {
       const columns = ['Backlog', 'Asignado a', 'En progreso', 'En revisión', 'Finalizado'];
       
       columns.forEach(status => {
         const colContainer = document.getElementById(`col-${status}`);
+        if (!colContainer) return;
+        
         colContainer.innerHTML = '';
 
         const statusTasks = tasks.filter(t => t.status === status);
-        document.getElementById(`count-${status}`).innerText = statusTasks.length;
+        const countBadge = document.getElementById(`count-${status}`);
+        if (countBadge) countBadge.innerText = statusTasks.length;
 
         statusTasks.forEach(task => {
           const card = createCardElement(task);
@@ -239,7 +276,6 @@
       lucide.createIcons();
     }
 
-    // HTML de cada tarjeta
     function createCardElement(task) {
       const card = document.createElement('div');
       card.className = 'bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-grab border border-slate-200/60 active:cursor-grabbing';
@@ -273,9 +309,13 @@
       return card;
     }
 
-    // Guardar Nueva Tarea mediante POST
     function saveNewTask() {
-      const newTask = {
+      const btnSave = document.getElementById('btnSave');
+      btnSave.disabled = true;
+      btnSave.innerText = 'Guardando...';
+
+      const params = {
+        action: 'createTask',
         title: document.getElementById('title').value,
         description: document.getElementById('description').value,
         assignee: document.getElementById('assignee').value,
@@ -285,32 +325,9 @@
         url: document.getElementById('url').value
       };
 
-      const btnSave = document.getElementById('btnSave');
-      btnSave.disabled = true;
-      btnSave.innerText = 'Guardando...';
-
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: 'createTask', task: newTask })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if(res.status === 'success') {
-          closeModal();
-          fetchTasks();
-        } else {
-          alert('Error al guardar: ' + res.message);
-        }
-      })
-      .catch(err => alert('Error de conexión: ' + err))
-      .finally(() => {
-        btnSave.disabled = false;
-        btnSave.innerText = 'Guardar Tarea';
-      });
+      jsonpRequest(params, 'handleCreateResponse');
     }
 
-    // Drag and Drop Handlers
     let draggedCardId = null;
 
     function handleDragStart(e) {
@@ -350,35 +367,18 @@
       });
     }
 
-    // Actualización de estado en Google Sheets mediante Apps Script
     function updateTaskStatusOnBackend(taskId, newStatus) {
-      // Optimistic Update en Frontend
       const taskIndex = tasks.findIndex(t => t.id === taskId);
       if (taskIndex !== -1) {
         tasks[taskIndex].status = newStatus;
         renderBoard();
       }
 
-      fetch(GAS_WEB_APP_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          action: 'updateStatus',
-          id: taskId,
-          newStatus: newStatus
-        })
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status !== 'success') {
-          alert('Error al actualizar estado en el servidor');
-          fetchTasks(); // Revertir si hubo error
-        }
-      })
-      .catch(err => {
-        console.error('Error enviando petición:', err);
-        fetchTasks();
-      });
+      jsonpRequest({
+        action: 'updateStatus',
+        id: taskId,
+        newStatus: newStatus
+      }, 'handleUpdateResponse');
     }
   </script>
 </body>
