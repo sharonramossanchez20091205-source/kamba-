@@ -3,131 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanban LMS: AI Web Builder</title>
+    <title>Kanban LMS - Gestor de Tareas</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Montserrat -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Montserrat', sans-serif; }
-    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-slate-100 min-h-screen font-sans">
 
-    <!-- Header Principal -->
-    <header class="bg-indigo-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold">Kanban LMS: AI Web Builder</h1>
-                <p class="text-indigo-200 text-sm">Gestión de Desarrollo y Contenidos</p>
-            </div>
-            <!-- Botón para abrir modal de nueva tarea -->
-            <button onclick="toggleModal(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition shadow">
-                Nueva Tarea
-            </button>
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md p-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold tracking-wide">Kanban LMS: AI Web Builder</h1>
+            <p class="text-xs text-indigo-200">Gestión de Desarrollo y Contenidos</p>
         </div>
+        <button onclick="openModal()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            <span>Nueva Tarea</span>
+        </button>
     </header>
 
-    <!-- Contenedor del Tablero Kanban -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6" id="kanban-board">
+    <!-- Main Board Container -->
+    <main class="p-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4" id="kanban-board">
             
-            <!-- 1. Backlog -->
-            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Backlog')">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <span class="font-semibold text-slate-700 flex items-center gap-2">
-                        <span class="w-3 h-3 rounded-full bg-slate-500"></span> Backlog
-                    </span>
-                    <span id="count-Backlog" class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-bold">0</span>
+            <!-- Columna: Backlog -->
+            <div class="bg-slate-200/70 rounded-xl p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Backlog')">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-slate-400"></span> Backlog
+                    </h2>
+                    <span id="count-Backlog" class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
                 </div>
-                <div id="col-Backlog" class="flex-1 overflow-y-auto space-y-3"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-column" id="col-Backlog"></div>
             </div>
 
-            <!-- 2. Asignado a -->
-            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Asignado a')">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <span class="font-semibold text-slate-700 flex items-center gap-2">
+            <!-- Columna: Asignado a -->
+            <div class="bg-slate-200/70 rounded-xl p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Asignado a')">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full bg-blue-500"></span> Asignado a
-                    </span>
-                    <span id="count-Asignado a" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold">0</span>
+                    </h2>
+                    <span id="count-Asignado" class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
                 </div>
-                <div id="col-Asignado a" class="flex-1 overflow-y-auto space-y-3"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-column" id="col-Asignado"></div>
             </div>
 
-            <!-- 3. En progreso -->
-            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'En progreso')">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <span class="font-semibold text-slate-700 flex items-center gap-2">
+            <!-- Columna: En progreso -->
+            <div class="bg-slate-200/70 rounded-xl p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'En progreso')">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full bg-amber-500"></span> En progreso
-                    </span>
-                    <span id="count-En progreso" class="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded-full font-bold">0</span>
+                    </h2>
+                    <span id="count-Progreso" class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
                 </div>
-                <div id="col-En progreso" class="flex-1 overflow-y-auto space-y-3"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-column" id="col-Progreso"></div>
             </div>
 
-            <!-- 4. En revisión -->
-            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'En revisión')">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <span class="font-semibold text-slate-700 flex items-center gap-2">
+            <!-- Columna: En revisión -->
+            <div class="bg-slate-200/70 rounded-xl p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'En revisión')">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full bg-purple-500"></span> En revisión
-                    </span>
-                    <span id="count-En revisión" class="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded-full font-bold">0</span>
+                    </h2>
+                    <span id="count-Revision" class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
                 </div>
-                <div id="col-En revisión" class="flex-1 overflow-y-auto space-y-3"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-column" id="col-Revision"></div>
             </div>
 
-            <!-- 5. Finalizado -->
-            <div class="bg-white rounded-xl shadow-sm p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Finalizado')">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <span class="font-semibold text-slate-700 flex items-center gap-2">
+            <!-- Columna: Finalizado -->
+            <div class="bg-slate-200/70 rounded-xl p-4 flex flex-col h-[75vh]" ondragover="allowDrop(event)" ondrop="drop(event, 'Finalizado')">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
                         <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Finalizado
-                    </span>
-                    <span id="count-Finalizado" class="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full font-bold">0</span>
+                    </h2>
+                    <span id="count-Finalizado" class="bg-slate-300 text-slate-700 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
                 </div>
-                <div id="col-Finalizado" class="flex-1 overflow-y-auto space-y-3"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-column" id="col-Finalizado"></div>
             </div>
 
         </div>
     </main>
 
-    <!-- Modal para Nueva Tarea -->
-    <div id="taskModal" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center px-4">
+    <!-- Modal Nueva Tarea -->
+    <div id="taskModal" class="fixed inset-0 bg-black/50 hidden flex justify-center items-center p-4 z-50">
         <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Crear Nueva Tarea</h3>
-            <form id="taskForm" onsubmit="crearTarea(event)" class="space-y-4">
+            <h2 class="text-lg font-bold text-slate-800 mb-4">Crear Nueva Tarea</h2>
+            <form id="taskForm" onsubmit="handleCreateTask(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Título</label>
-                    <input type="text" id="titulo" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="text" id="taskTitle" required class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Descripción</label>
-                    <textarea id="descripcion" rows="2" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    <textarea id="taskDesc" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Responsable</label>
-                    <select id="responsable" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="Chelsea">Chelsea</option>
-                        <option value="Integrante 1">Integrante 1</option>
-                        <option value="Integrante 2">Integrante 2</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Responsable</label>
+                        <input type="text" id="taskAssignee" value="Chelsea" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">URL de Entregable</label>
+                        <input type="url" id="taskUrl" placeholder="https://..." class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha Inicio</label>
-                        <input type="date" id="fechaInicio" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                        <input type="date" id="taskStart" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha Fin</label>
-                        <input type="date" id="fechaFin" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
+                        <input type="date" id="taskEnd" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">URL Entregable</label>
-                    <input type="url" id="urlEntregable" placeholder="https://..." class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="toggleModal(false)" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cancelar</button>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium">Guardar</button>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow cursor-pointer">Guardar Tarea</button>
                 </div>
             </form>
         </div>
@@ -135,100 +127,123 @@
 
     <!-- Script de Conexión y Lógica -->
     <script>
-        // PEGA AQUÍ LA URL DE TU WEB APP DE APPS SCRIPT
-        const API_URL = "https://script.google.com/macros/s/AKfycbxaz-1E-6sdgGs4yrtVyUEf8POc6TeodsOlW2ueGSeirbIUsuJqU3xZ-58JgyVNJdqy/exec";
+        // PEGA AQUÍ TU URL CORRECTA DE GOOGLE APPS SCRIPT QUE TERMINA EN /exec
+        const API_URL = "https://script.google.com/macros/s/AKfycbz6N0_6zfFJsRdR2ENhwWMPewHsoxIMJL8fKylMdUaTnho7tUFaaBSJyW4EGl0joXeu/exec";
 
-        async function cargarTareas() {
+        let tasks = [];
+
+        async function fetchTasks() {
             try {
-                let response = await fetch(API_URL);
-                let tareas = await response.json();
-                renderizarTablero(tareas);
+                const response = await fetch(API_URL);
+                tasks = await response.json();
+                renderBoard();
             } catch (error) {
                 console.error("Error al cargar tareas:", error);
             }
         }
 
-        function renderizarTablero(tareas) {
-            const columnas = ["Backlog", "Asignado a", "En progreso", "En revisión", "Finalizado"];
-            columnas.forEach(col => {
-                document.getElementById(`col-${col}`).innerHTML = "";
-            });
+        function renderBoard() {
+            const columns = {
+                'Backlog': document.getElementById('col-Backlog'),
+                'Asignado a': document.getElementById('col-Asignado'),
+                'En progreso': document.getElementById('col-Progreso'),
+                'En revisión': document.getElementById('col-Revision'),
+                'Finalizado': document.getElementById('col-Finalizado')
+            };
 
-            let conteos = { "Backlog": 0, "Asignado a": 0, "En progreso": 0, "En revisión": 0, "Finalizado": 0 };
+            const counts = { 'Backlog': 0, 'Asignado a': 0, 'En progreso': 0, 'En revisión': 0, 'Finalizado': 0 };
 
-            tareas.forEach(tarea => {
-                const estado = tarea.estado || "Backlog";
-                if (conteos[estado] !== undefined) conteos[estado]++;
-                
-                const cardHTML = `
-                    <div draggable="true" ondragstart="drag(event, '${tarea.id}')" class="bg-slate-50 border border-slate-200 p-3 rounded-lg shadow-sm hover:shadow transition cursor-grab">
-                        <h4 class="font-semibold text-slate-800 text-sm">${tarea.titulo || ''}</h4>
-                        <p class="text-xs text-slate-500 mt-1">${tarea.descripcion || ''}</p>
-                        ${tarea.urlEntregable ? `<a href="${tarea.urlEntregable}" target="_blank" class="text-xs text-indigo-600 underline block mt-1">Ver entregable</a>` : ''}
-                        <div class="mt-3 flex justify-between items-center text-xs text-slate-400">
-                            <span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-medium">${tarea.responsable || ''}</span>
-                            <span>${tarea.fechaFin ? tarea.fechaFin.substring(0, 10) : ''}</span>
-                        </div>
+            // Limpiar columnas
+            Object.values(columns).forEach(col => col.innerHTML = '');
+
+            tasks.forEach(task => {
+                const status = task.status || 'Backlog';
+                if (counts[status] !== undefined) counts[status]++;
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 cursor-move hover:shadow-md transition";
+                card.draggable = true;
+                card.ondragstart = (e) => e.dataTransfer.setData('text/plain', task.id);
+
+                card.innerHTML = `
+                    <h3 class="font-bold text-slate-800 text-sm mb-1">${task.title}</h3>
+                    <p class="text-xs text-slate-500 mb-3">${task.description || 'Sin descripción'}</p>
+                    <div class="flex justify-between items-center text-[11px] text-slate-400 border-t pt-2">
+                        <span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium">${task.assignee}</span>
+                        <span>${task.endDate || ''}</span>
                     </div>
                 `;
-                const contenedorColumna = document.getElementById(`col-${estado}`);
-                if (contenedorColumna) contenedorColumna.innerHTML += cardHTML;
+
+                if (columns[status]) {
+                    columns[status].appendChild(card);
+                }
             });
 
-            for (let col in conteos) {
-                const badge = document.getElementById(`count-${col}`);
-                if (badge) badge.innerText = conteos[col];
+            // Actualizar contadores visuales
+            document.getElementById('count-Backlog').innerText = counts['Backlog'];
+            document.getElementById('count-Asignado').innerText = counts['Asignado a'];
+            document.getElementById('count-Progreso').innerText = counts['En progreso'];
+            document.getElementById('count-Revision').innerText = counts['En revisión'];
+            document.getElementById('count-Finalizado').innerText = counts['Finalizado'];
+        }
+
+        function allowDrop(e) { e.preventDefault(); }
+
+        async function drop(e, newStatus) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData('text/plain');
+            
+            const task = tasks.find(t => t.id.toString() === taskId.toString());
+            if (task && task.status !== newStatus) {
+                task.status = newStatus;
+                renderBoard();
+
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'updateStatus', id: taskId, status: newStatus })
+                });
             }
         }
 
-        function allowDrop(ev) { ev.preventDefault(); }
-        function drag(ev, id) { ev.dataTransfer.setData("text", id); }
-
-        async function drop(ev, nuevoEstado) {
-            ev.preventDefault();
-            const id = ev.dataTransfer.getData("text");
-            
-            // Mostrar indicador visual rápido o llamada directa
-            await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "updateStatus", id: id, estado: nuevoEstado })
-            });
-            
-            cargarTareas();
-        }
-
-        function toggleModal(abrir) {
-            const modal = document.getElementById("taskModal");
-            if (abrir) modal.classList.remove("hidden");
-            else modal.classList.add("hidden");
-        }
-
-        async function crearTarea(event) {
-            event.preventDefault();
-            const nuevaTarea = {
-                action: "create",
-                titulo: document.getElementById("titulo").value,
-                descripcion: document.getElementById("descripcion").value,
-                responsable: document.getElementById("responsable").value,
-                fechaInicio: document.getElementById("fechaInicio").value,
-                fechaFin: document.getElementById("fechaFin").value,
-                urlEntregable: document.getElementById("urlEntregable").value,
-                estado: "Backlog"
+        async function handleCreateTask(e) {
+            e.preventDefault();
+            const newTask = {
+                action: 'createTask',
+                id: Date.now().toString(),
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDesc').value,
+                assignee: document.getElementById('taskAssignee').value,
+                startDate: document.getElementById('taskStart').value,
+                endDate: document.getElementById('taskEnd').value,
+                url: document.getElementById('taskUrl').value,
+                status: 'Backlog'
             };
 
-            toggleModal(false);
-            document.getElementById("taskForm").reset();
+            closeModal();
+            document.getElementById('taskForm').reset();
+
+            tasks.push(newTask);
+            renderBoard();
 
             await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(nuevaTarea)
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newTask)
             });
 
-            cargarTareas();
+            fetchTasks();
         }
 
-        // Cargar las tareas al abrir la página
-        cargarTareas();
+        function openModal() { document.getElementById('taskModal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('taskModal').classList.add('hidden'); }
+
+        window.onload = () => {
+            lucide.createIcons();
+            fetchTasks();
+        };
     </script>
 </body>
 </html>
