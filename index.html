@@ -1,385 +1,274 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kanban LMS - Creador Web con IA</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Montserrat -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <style>
-    body {
-      font-family: 'Montserrat', sans-serif;
-    }
-    .kanban-column {
-      min-height: 70vh;
-    }
-    .dragging {
-      opacity: 0.4;
-      transform: scale(0.98);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban LMS: AI Web Builder</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #EDF2F7; }
+        .kanban-column { min-height: 75vh; }
+        .overflow-y-auto::-webkit-scrollbar { width: 6px; }
+        .overflow-y-auto::-webkit-scrollbar-thumb { background-color: #CBD5E0; border-radius: 3px; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kanban-bg': '#EDF2F7',
+                        'header-bg': '#303F9F',
+                        'btn-bg': '#8C9EFF',
+                        'card-border': '#E2E8F0'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col text-slate-900">
 
-  <!-- Header -->
-  <header class="bg-indigo-900 text-white shadow-lg py-4 px-6 flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-      <i data-lucide="layout-dashboard" class="w-7 h-7 text-indigo-400"></i>
-      <div>
-        <h1 class="text-xl font-bold tracking-wide">Kanban LMS: AI Web Builder</h1>
-        <p class="text-xs text-indigo-200">Gestión de Desarrollo y Contenidos</p>
-      </div>
-    </div>
-    <button id="btnOpenModal" type="button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg flex items-center space-x-2 shadow transition cursor-pointer">
-      <i data-lucide="plus-circle" class="w-5 h-5"></i>
-      <span>Nueva Tarea</span>
-    </button>
-  </header>
-
-  <!-- Contenedor Principal / Columnas -->
-  <main class="flex-1 p-6 overflow-x-auto">
-    <div id="board" class="grid grid-cols-1 md:grid-cols-5 gap-4 min-w-[1200px]">
-      
-      <!-- Columna: Backlog -->
-      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3 border-b-2 border-slate-300 pb-2">
-          <span class="font-bold text-slate-700 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-slate-500"></span> Backlog
-          </span>
-          <span id="count-Backlog" class="text-xs font-semibold bg-slate-300 text-slate-700 px-2 py-0.5 rounded-full">0</span>
-        </div>
-        <div id="col-Backlog" data-status="Backlog" class="kanban-column flex-1 flex flex-col gap-3"></div>
-      </div>
-
-      <!-- Columna: Asignado a -->
-      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3 border-b-2 border-blue-400 pb-2">
-          <span class="font-bold text-slate-700 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-blue-500"></span> Asignado a
-          </span>
-          <span id="count-Asignado a" class="text-xs font-semibold bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">0</span>
-        </div>
-        <div id="col-Asignado a" data-status="Asignado a" class="kanban-column flex-1 flex flex-col gap-3"></div>
-      </div>
-
-      <!-- Columna: En progreso -->
-      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3 border-b-2 border-amber-400 pb-2">
-          <span class="font-bold text-slate-700 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-amber-500"></span> En progreso
-          </span>
-          <span id="count-En progreso" class="text-xs font-semibold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">0</span>
-        </div>
-        <div id="col-En progreso" data-status="En progreso" class="kanban-column flex-1 flex flex-col gap-3"></div>
-      </div>
-
-      <!-- Columna: En revisión -->
-      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3 border-b-2 border-purple-400 pb-2">
-          <span class="font-bold text-slate-700 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-purple-500"></span> En revisión
-          </span>
-          <span id="count-En revisión" class="text-xs font-semibold bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full">0</span>
-        </div>
-        <div id="col-En revisión" data-status="En revisión" class="kanban-column flex-1 flex flex-col gap-3"></div>
-      </div>
-
-      <!-- Columna: Finalizado -->
-      <div class="bg-slate-200/80 rounded-xl p-4 flex flex-col shadow-inner">
-        <div class="flex items-center justify-between mb-3 border-b-2 border-emerald-400 pb-2">
-          <span class="font-bold text-slate-700 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Finalizado
-          </span>
-          <span id="count-Finalizado" class="text-xs font-semibold bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">0</span>
-        </div>
-        <div id="col-Finalizado" data-status="Finalizado" class="kanban-column flex-1 flex flex-col gap-3"></div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Modal para Crear Nueva Tarea -->
-  <div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
-      <button id="btnCloseModal" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
-
-      <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <i data-lucide="file-plus" class="text-indigo-600"></i> Nueva Tarea Kanban
-      </h2>
-
-      <form id="taskForm" class="space-y-4">
+    <!-- Header -->
+    <header class="bg-header-bg text-white shadow-sm p-5 flex justify-between items-center sticky top-0 z-50">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Título de la Actividad</label>
-          <input type="text" id="title" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Ej: Crear Prompting Guide para ChatGPT">
+            <h1 class="text-2xl font-bold tracking-tight">Kanban LMS: AI Web Builder</h1>
+            <p class="text-sm text-indigo-200 font-light mt-0.5">Gestión de Desarrollo y Contenidos</p>
         </div>
+        <button onclick="openModal()" class="bg-btn-bg text-header-bg px-6 py-2.5 rounded-lg font-semibold shadow-sm hover:bg-indigo-100 transition text-sm flex items-center gap-2">
+            Nueva Tarea
+        </button>
+    </header>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Descripción</label>
-          <textarea id="description" rows="3" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Detalles específicos sobre el desarrollo..."></textarea>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Responsable</label>
-            <select id="assignee" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-              <option value="Sin asignar">Sin asignar</option>
-              <option value="Alex Rivera">Alex Rivera (Lead)</option>
-              <option value="María Gómez">María Gómez (Dev)</option>
-              <option value="Carlos Ruiz">Carlos Ruiz (Designer)</option>
-              <option value="Elena Torres">Elena Torres (Prompt Eng)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Estado Inicial</label>
-            <select id="status" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-              <option value="Backlog">Backlog</option>
-              <option value="Asignado a">Asignado a</option>
-              <option value="En progreso">En progreso</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de Inicio</label>
-            <input type="date" id="startDate" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha de Fin</label>
-            <input type="date" id="endDate" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">URL Entregable / Figma / GitHub</label>
-          <input type="url" id="url" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="https://...">
-        </div>
-
-        <div class="flex justify-end gap-3 pt-3 border-t">
-          <button type="button" id="btnCancel" class="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-medium">Cancelar</button>
-          <button type="submit" id="btnSave" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow cursor-pointer">Guardar Tarea</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- JavaScript Lógica App -->
-  <script>
-    const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuHCHTcF0XK0Le2BGkjR5uvI2mQN7t6Fls4FXP04Bw0k6lEHB5fm0kzwZ22RL379cKJw/exec';
-
-    let tasks = [];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-      fetchTasks();
-      setupEventListeners();
-      setupDragAndDrop();
-    });
-
-    const modal = document.getElementById('taskModal');
-    
-    function openModal() { 
-      modal.classList.remove('hidden'); 
-      modal.classList.add('flex'); 
-    }
-    
-    function closeModal() { 
-      modal.classList.add('hidden'); 
-      modal.classList.remove('flex'); 
-      document.getElementById('taskForm').reset(); 
-    }
-
-    function setupEventListeners() {
-      const btnOpen = document.getElementById('btnOpenModal');
-      const btnClose = document.getElementById('btnCloseModal');
-      const btnCancel = document.getElementById('btnCancel');
-      const form = document.getElementById('taskForm');
-
-      if (btnOpen) btnOpen.addEventListener('click', openModal);
-      if (btnClose) btnClose.addEventListener('click', closeModal);
-      if (btnCancel) btnCancel.addEventListener('click', closeModal);
-
-      if (form) {
-        form.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveNewTask();
-        });
-      }
-    }
-
-    // JSONP Generico
-    function jsonpRequest(params, callbackName) {
-      const oldScript = document.getElementById(callbackName);
-      if (oldScript) oldScript.remove();
-
-      const queryString = new URLSearchParams(params).toString();
-      const script = document.createElement('script');
-      script.id = callbackName;
-      script.src = `${GAS_WEB_APP_URL}?${queryString}&callback=${callbackName}&t=${new Date().getTime()}`;
-      document.body.appendChild(script);
-    }
-
-    function fetchTasks() {
-      jsonpRequest({ action: 'getTasks' }, 'handleTasksResponse');
-    }
-
-    window.handleTasksResponse = function(response) {
-      if (response && response.status === 'success') {
-        tasks = response.data || [];
-        renderBoard();
-      } else {
-        console.error('Error al obtener tareas:', response);
-      }
-    };
-
-    window.handleCreateResponse = function(response) {
-      const btnSave = document.getElementById('btnSave');
-      if (btnSave) {
-        btnSave.disabled = false;
-        btnSave.innerText = 'Guardar Tarea';
-      }
-      closeModal();
-      fetchTasks();
-    };
-
-    window.handleUpdateResponse = function(response) {
-      fetchTasks();
-    };
-
-    function renderBoard() {
-      const columns = ['Backlog', 'Asignado a', 'En progreso', 'En revisión', 'Finalizado'];
-      
-      columns.forEach(status => {
-        const colContainer = document.getElementById(`col-${status}`);
-        if (!colContainer) return;
-        
-        colContainer.innerHTML = '';
-
-        const statusTasks = tasks.filter(t => t.status === status);
-        const countBadge = document.getElementById(`count-${status}`);
-        if (countBadge) countBadge.innerText = statusTasks.length;
-
-        statusTasks.forEach(task => {
-          const card = createCardElement(task);
-          colContainer.appendChild(card);
-        });
-      });
-      
-      lucide.createIcons();
-    }
-
-    function createCardElement(task) {
-      const card = document.createElement('div');
-      card.className = 'bg-white rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-grab border border-slate-200/60 active:cursor-grabbing';
-      card.draggable = true;
-      card.dataset.id = task.id;
-
-      card.innerHTML = `
-        <h3 class="font-semibold text-slate-800 text-sm mb-1">${task.title}</h3>
-        <p class="text-xs text-slate-500 mb-3 line-clamp-2">${task.description || 'Sin descripción'}</p>
-
-        <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
-          <div class="flex items-center justify-between">
-            <span class="flex items-center gap-1 font-medium text-slate-600">
-              <i data-lucide="user" class="w-3.5 h-3.5 text-indigo-500"></i> ${task.assignee}
-            </span>
-            ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"><i data-lucide="external-link" class="w-3 h-3"></i> Link</a>` : ''}
-          </div>
-
-          ${task.startDate || task.endDate ? `
-            <div class="flex items-center gap-1 text-[11px] text-slate-400">
-              <i data-lucide="calendar" class="w-3 h-3"></i>
-              <span>${task.startDate \vert{}\vert{} '---'} al${task.endDate || '---'}</span>
+    <!-- Main Kanban Board -->
+    <main class="flex-1 p-6 md:p-8 overflow-x-auto">
+        <div id="board" class="grid grid-cols-5 gap-5 min-w-[1200px]">
+            
+            <!-- Columna Backlog -->
+            <div class="bg-white rounded-xl shadow-sm flex flex-col border border-card-border">
+                <div class="px-5 py-4 border-b border-card-border flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+                        <span class="w-3 h-3 rounded-full bg-slate-500 inline-block"></span>
+                        Backlog
+                    </h2>
+                    <span id="count-Backlog" class="bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="flex-1 p-3 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Backlog')"></div>
             </div>
-          ` : ''}
+
+            <!-- Columna Asignado a -->
+            <div class="bg-white rounded-xl shadow-sm flex flex-col border border-card-border">
+                <div class="px-5 py-4 border-b border-card-border flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                        Asignado a
+                    </h2>
+                    <span id="count-Asignado-a" class="bg-blue-50 text-blue-600 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="flex-1 p-3 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Asignado a')"></div>
+            </div>
+
+            <!-- Columna En progreso -->
+            <div class="bg-white rounded-xl shadow-sm flex flex-col border border-card-border">
+                <div class="px-5 py-4 border-b border-card-border flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+                        <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                        En progreso
+                    </h2>
+                    <span id="count-En-progreso" class="bg-yellow-50 text-yellow-700 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="flex-1 p-3 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'En progreso')"></div>
+            </div>
+
+            <!-- Columna En revisión -->
+            <div class="bg-white rounded-xl shadow-sm flex flex-col border border-card-border">
+                <div class="px-5 py-4 border-b border-card-border flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+                        <span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
+                        En revisión
+                    </h2>
+                    <span id="count-En-revision" class="bg-purple-50 text-purple-700 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="flex-1 p-3 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'En revisión')"></div>
+            </div>
+
+            <!-- Columna Finalizado -->
+            <div class="bg-white rounded-xl shadow-sm flex flex-col border border-card-border">
+                <div class="px-5 py-4 border-b border-card-border flex justify-between items-center">
+                    <h2 class="font-semibold text-slate-800 flex items-center gap-2 text-sm">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                        Finalizado
+                    </h2>
+                    <span id="count-Finalizado" class="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full">0</span>
+                </div>
+                <div class="flex-1 p-3 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Finalizado')"></div>
+            </div>
+
         </div>
-      `;
+    </main>
 
-      card.addEventListener('dragstart', handleDragStart);
-      card.addEventListener('dragend', handleDragEnd);
+    <!-- Modal para Nueva Tarea -->
+    <div id="taskModal" class="fixed inset-0 bg-black/60 hidden justify-center items-center p-4 z-[100]">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-7 shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-xl font-bold text-slate-900">Crear Nueva Tarea</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+            </div>
+            
+            <form id="taskForm" onsubmit="submitTask(event)" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Título</label>
+                    <input type="text" id="title" placeholder="Ej. Diseñar landing page" required class="w-full border border-slate-300 p-2.5 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Descripción</label>
+                    <textarea id="description" placeholder="Detalles de la actividad..." rows="3" class="w-full border border-slate-300 p-2.5 rounded-lg"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Responsable</label>
+                        <select id="assignee" class="w-full border border-slate-300 p-2.5 rounded-lg bg-white">
+                            <option value="Chelsea">Chelsea</option>
+                            <option value="Equipo IA">Equipo IA</option>
+                            <option value="Tutor Frontend">Tutor Frontend</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">URL Entregable</label>
+                        <input type="url" id="url" placeholder="https://..." class="w-full border border-slate-300 p-2.5 rounded-lg">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fecha de Inicio</label>
+                        <input type="date" id="startDate" class="w-full border border-slate-300 p-2.5 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Fecha de Fin</label>
+                        <input type="date" id="endDate" class="w-full border border-slate-300 p-2.5 rounded-lg" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg font-semibold text-sm">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-header-bg text-white rounded-lg font-semibold text-sm">Crear Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-      return card;
-    }
+    <!-- JavaScript -->
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxiJSz8fbrnN0DfTrd_vz0-yRdUsi3HW-T5yl7hZiHuJdzt5zNTM4BJLnDKzMxxG6is/exec"; // Pega aquí tu URL de Apps Script
 
-    function saveNewTask() {
-      const btnSave = document.getElementById('btnSave');
-      btnSave.disabled = true;
-      btnSave.innerText = 'Guardando...';
+        let tasks = [];
 
-      const params = {
-        action: 'createTask',
-        title: document.getElementById('title').value,
-        description: document.getElementById('description').value,
-        assignee: document.getElementById('assignee').value,
-        status: document.getElementById('status').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        url: document.getElementById('url').value
-      };
+        async function fetchTasks() {
+            try {
+                const response = await fetch(API_URL);
+                tasks = await response.json();
+                renderBoard();
+            } catch (error) {
+                console.error("Error al cargar tareas:", error);
+            }
+        }
 
-      jsonpRequest(params, 'handleCreateResponse');
-    }
+        function renderBoard() {
+            const columns = document.querySelectorAll('.kanban-column');
+            columns.forEach(col => col.innerHTML = '');
 
-    let draggedCardId = null;
+            const counts = { 'Backlog': 0, 'Asignado a': 0, 'En progreso': 0, 'En revisión': 0, 'Finalizado': 0 };
 
-    function handleDragStart(e) {
-      draggedCardId = this.dataset.id;
-      this.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    }
+            tasks.forEach(task => {
+                const statusMap = {
+                    'Backlog': 'Backlog',
+                    'Asignado a': 'Asignado a',
+                    'En progreso': 'En progreso',
+                    'En revisión': 'En revisión',
+                    'Finalizado': 'Finalizado'
+                };
+                
+                const colWrapper = document.querySelector(`[data-status="${statusMap[task.status]}"]`);
+                
+                if (colWrapper) {
+                    const colBody = colWrapper.querySelector('.kanban-column');
+                    counts[statusMap[task.status]]++;
 
-    function handleDragEnd(e) {
-      this.classList.remove('dragging');
-      draggedCardId = null;
-    }
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-lg shadow-sm border border-slate-100 cursor-grab active:cursor-grabbing flex flex-col gap-2 hover:shadow-md transition-all";
+                    card.draggable = true;
+                    card.id = task.id;
+                    card.ondragstart = (e) => e.dataTransfer.setData('text/plain', task.id);
+                    
+                    card.innerHTML = `
+                        <div class="font-medium text-slate-900 text-sm leading-snug">${task.title}</div>
+                        ${task.description ? `<div class="text-xs text-slate-500 line-clamp-2">${task.description}</div>` : ''}
+                        <div class="flex items-center justify-between mt-1 pt-2 border-t border-slate-100">
+                            <span class="text-[11px] font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">${task.assignee}</span>
+                            <div class="text-[11px] text-slate-400">${task.endDate}</div>
+                        </div>
+                        ${task.url ? `<a href="${task.url}" target="_blank" class="text-xs text-blue-600 hover:underline truncate">Ver entregable ↗</a>` : ''}
+                    `;
+                    colBody.appendChild(card);
+                }
+            });
 
-    function setupDragAndDrop() {
-      const columns = document.querySelectorAll('.kanban-column');
+            document.getElementById('count-Backlog').innerText = counts['Backlog'];
+            document.getElementById('count-Asignado-a').innerText = counts['Asignado a'];
+            document.getElementById('count-En-progreso').innerText = counts['En progreso'];
+            document.getElementById('count-En-revision').innerText = counts['En revisión'];
+            document.getElementById('count-Finalizado').innerText = counts['Finalizado'];
+        }
 
-      columns.forEach(col => {
-        col.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          col.classList.add('bg-slate-300/50');
-        });
+        function allowDrop(e) { e.preventDefault(); }
 
-        col.addEventListener('dragleave', () => {
-          col.classList.remove('bg-slate-300/50');
-        });
+        async function drop(e, newStatus) {
+            e.preventDefault();
+            const taskId = e.dataTransfer.getData('text/plain');
+            const task = tasks.find(t => t.id == taskId);
+            if (task && task.status !== newStatus) {
+                task.status = newStatus;
+                renderBoard();
+                await updateTaskInBackend(task);
+            }
+        }
 
-        col.addEventListener('drop', (e) => {
-          e.preventDefault();
-          col.classList.remove('bg-slate-300/50');
+        async function updateTaskInBackend(task) {
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'updateStatus', id: task.id, status: task.status })
+            });
+            fetchTasks();
+        }
 
-          const newStatus = col.dataset.status;
-          if (draggedCardId) {
-            updateTaskStatusOnBackend(draggedCardId, newStatus);
-          }
-        });
-      });
-    }
+        function openModal() { document.getElementById('taskModal').classList.remove('hidden'); document.getElementById('taskModal').classList.add('flex'); }
+        function closeModal() { document.getElementById('taskModal').classList.add('hidden'); document.getElementById('taskModal').classList.remove('flex'); }
 
-    function updateTaskStatusOnBackend(taskId, newStatus) {
-      const taskIndex = tasks.findIndex(t => t.id === taskId);
-      if (taskIndex !== -1) {
-        tasks[taskIndex].status = newStatus;
-        renderBoard();
-      }
+        async function submitTask(e) {
+            e.preventDefault();
+            const newTask = {
+                id: Date.now().toString(),
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                assignee: document.getElementById('assignee').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                url: document.getElementById('url').value,
+                status: 'Backlog'
+            };
 
-      jsonpRequest({
-        action: 'updateStatus',
-        id: taskId,
-        newStatus: newStatus
-      }, 'handleUpdateResponse');
-    }
-  </script>
+            await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'createTask', ...newTask })
+            });
+
+            closeModal();
+            document.getElementById('taskForm').reset();
+            fetchTasks();
+        }
+
+        fetchTasks();
+    </script>
 </body>
 </html>
