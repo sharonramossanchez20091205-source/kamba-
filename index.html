@@ -6,72 +6,101 @@
     <title>Tablero Kanban - LMS IA</title>
     <!-- Tailwind CSS para el diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fuente Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Fuente Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; }
-        .kanban-column { min-height: 65vh; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .kanban-column { min-height: 68vh; }
+        /* Scrollbar personalizado sutil */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
 
     <!-- Encabezado -->
-    <header class="bg-indigo-600 text-white shadow p-4 flex justify-between items-center">
-        <h1 class="text-lg font-bold">Kanban | Creación Web con IA (LMS)</h1>
-        <button onclick="openModal()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold text-sm shadow hover:bg-indigo-50 transition">+ Nueva Tarjeta</button>
+    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/60 sticky top-0 z-20 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
+            <h1 class="text-base font-bold tracking-wide text-white">Kanban <span class="text-slate-400 font-normal">| Creación Web con IA (LMS)</span></h1>
+        </div>
+        <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-semibold text-sm shadow-md shadow-indigo-600/20 transition-all duration-200 flex items-center gap-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nueva Tarjeta
+        </button>
     </header>
 
     <!-- Tablero -->
     <main class="flex-1 p-6 overflow-x-auto">
-        <div class="flex gap-6 min-w-[1100px]">
+        <div class="flex gap-5 min-w-[1100px] pb-4">
             <!-- Columna 1 -->
-            <div class="flex-1 bg-slate-200/70 rounded-xl p-4 flex flex-col" data-status="Backlog">
-                <h2 class="font-semibold text-slate-700 mb-3 flex justify-between text-sm">Backlog <span class="bg-slate-300 px-2 py-0.5 rounded-full text-xs count-backlog">0</span></h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Backlog')"></div>
+            <div class="flex-1 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-sm" data-status="Backlog">
+                <h2 class="font-semibold text-slate-300 mb-3 flex justify-between items-center text-xs uppercase tracking-wider">
+                    <span>Backlog</span> 
+                    <span class="bg-slate-700/80 text-slate-300 px-2.5 py-0.5 rounded-full text-xs font-bold count-backlog">0</span>
+                </h2>
+                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column p-1" ondragover="allowDrop(event)" ondrop="drop(event, 'Backlog')"></div>
             </div>
             <!-- Columna 2 -->
-            <div class="flex-1 bg-slate-200/70 rounded-xl p-4 flex flex-col" data-status="Asignado a">
-                <h2 class="font-semibold text-slate-700 mb-3 flex justify-between text-sm">Asignado a <span class="bg-slate-300 px-2 py-0.5 rounded-full text-xs count-asignado">0</span></h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Asignado a')"></div>
+            <div class="flex-1 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-sm" data-status="Asignado a">
+                <h2 class="font-semibold text-slate-300 mb-3 flex justify-between items-center text-xs uppercase tracking-wider">
+                    <span>Asignado a</span> 
+                    <span class="bg-slate-700/80 text-slate-300 px-2.5 py-0.5 rounded-full text-xs font-bold count-asignado">0</span>
+                </h2>
+                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column p-1" ondragover="allowDrop(event)" ondrop="drop(event, 'Asignado a')"></div>
             </div>
             <!-- Columna 3 -->
-            <div class="flex-1 bg-slate-200/70 rounded-xl p-4 flex flex-col" data-status="En progreso">
-                <h2 class="font-semibold text-slate-700 mb-3 flex justify-between text-sm">En progreso <span class="bg-slate-300 px-2 py-0.5 rounded-full text-xs count-progreso">0</span></h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'En progreso')"></div>
+            <div class="flex-1 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-sm" data-status="En progreso">
+                <h2 class="font-semibold text-slate-300 mb-3 flex justify-between items-center text-xs uppercase tracking-wider">
+                    <span>En progreso</span> 
+                    <span class="bg-slate-700/80 text-slate-300 px-2.5 py-0.5 rounded-full text-xs font-bold count-progreso">0</span>
+                </h2>
+                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column p-1" ondragover="allowDrop(event)" ondrop="drop(event, 'En progreso')"></div>
             </div>
             <!-- Columna 4 -->
-            <div class="flex-1 bg-slate-200/70 rounded-xl p-4 flex flex-col" data-status="En revisión">
-                <h2 class="font-semibold text-slate-700 mb-3 flex justify-between text-sm">En revisión <span class="bg-slate-300 px-2 py-0.5 rounded-full text-xs count-revision">0</span></h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'En revisión')"></div>
+            <div class="flex-1 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-sm" data-status="En revisión">
+                <h2 class="font-semibold text-slate-300 mb-3 flex justify-between items-center text-xs uppercase tracking-wider">
+                    <span>En revisión</span> 
+                    <span class="bg-slate-700/80 text-slate-300 px-2.5 py-0.5 rounded-full text-xs font-bold count-revision">0</span>
+                </h2>
+                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column p-1" ondragover="allowDrop(event)" ondrop="drop(event, 'En revisión')"></div>
             </div>
             <!-- Columna 5 -->
-            <div class="flex-1 bg-slate-200/70 rounded-xl p-4 flex flex-col" data-status="Finalizado">
-                <h2 class="font-semibold text-slate-700 mb-3 flex justify-between text-sm">Finalizado <span class="bg-slate-300 px-2 py-0.5 rounded-full text-xs count-finalizado">0</span></h2>
-                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column" ondragover="allowDrop(event)" ondrop="drop(event, 'Finalizado')"></div>
+            <div class="flex-1 bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 flex flex-col shadow-sm" data-status="Finalizado">
+                <h2 class="font-semibold text-slate-300 mb-3 flex justify-between items-center text-xs uppercase tracking-wider">
+                    <span>Finalizado</span> 
+                    <span class="bg-slate-700/80 text-slate-300 px-2.5 py-0.5 rounded-full text-xs font-bold count-finalizado">0</span>
+                </h2>
+                <div class="flex-1 flex flex-col gap-3 overflow-y-auto kanban-column p-1" ondragover="allowDrop(event)" ondrop="drop(event, 'Finalizado')"></div>
             </div>
         </div>
     </main>
 
     <!-- Ventana emergente (Modal) -->
-    <div id="taskModal" class="fixed inset-0 bg-black/40 hidden justify-center items-center p-4">
-        <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="font-bold text-base mb-4">Crear Nueva Tarea</h3>
-            <form id="taskForm" onsubmit="submitTask(event)" class="flex flex-col gap-3 text-sm">
-                <input type="text" id="title" placeholder="Título de la actividad" required class="border p-2 rounded-lg outline-indigo-500">
-                <textarea id="description" placeholder="Descripción detallada" rows="2" class="border p-2 rounded-lg outline-indigo-500"></textarea>
-                <select id="assignee" class="border p-2 rounded-lg outline-indigo-500">
-                    <option value="Sharon">Sharon</option>
-                    <option value="Valentina">Valentina</option>
-                    <option value="Valeria">Valeria</option>
+    <div id="taskModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl scale-100 transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-base text-white">Crear Nueva Tarea</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white cursor-pointer">✕</button>
+            </div>
+            <form id="taskForm" onsubmit="submitTask(event)" class="flex flex-col gap-3.5 text-sm">
+                <input type="text" id="title" placeholder="Título de la actividad" required class="bg-slate-800/60 border border-slate-700/70 text-white placeholder:text-slate-500 p-2.5 rounded-xl outline-none focus:border-indigo-500 transition">
+                <textarea id="description" placeholder="Descripción detallada" rows="2" class="bg-slate-800/60 border border-slate-700/70 text-white placeholder:text-slate-500 p-2.5 rounded-xl outline-none focus:border-indigo-500 transition resize-none"></textarea>
+                <select id="assignee" class="bg-slate-800/60 border border-slate-700/70 text-white p-2.5 rounded-xl outline-none focus:border-indigo-500 transition">
+                    <option value="Sharon" class="bg-slate-900">Sharon</option>
+                    <option value="Valentina" class="bg-slate-900">Valentina</option>
+                    <option value="Valeria" class="bg-slate-900">Valeria</option>
                 </select>
                 <div class="flex gap-2">
-                    <input type="date" id="startDate" class="border p-2 rounded-lg flex-1" required>
-                    <input type="date" id="endDate" class="border p-2 rounded-lg flex-1" required>
+                    <input type="date" id="startDate" class="bg-slate-800/60 border border-slate-700/70 text-slate-300 p-2.5 rounded-xl flex-1 outline-none focus:border-indigo-500 transition" required>
+                    <input type="date" id="endDate" class="bg-slate-800/60 border border-slate-700/70 text-slate-300 p-2.5 rounded-xl flex-1 outline-none focus:border-indigo-500 transition" required>
                 </div>
-                <input type="url" id="url" placeholder="URL del entregable (opcional)" class="border p-2 rounded-lg outline-indigo-500">
-                <div class="flex justify-end gap-2 mt-3">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-100 rounded-lg text-slate-600">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium">Guardar Tarjeta</button>
+                <input type="url" id="url" placeholder="URL del entregable (opcional)" class="bg-slate-800/60 border border-slate-700/70 text-white placeholder:text-slate-500 p-2.5 rounded-xl outline-none focus:border-indigo-500 transition">
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition shadow-lg shadow-indigo-600/20 cursor-pointer">Guardar Tarjeta</button>
                 </div>
             </form>
         </div>
@@ -79,7 +108,6 @@
 
     <!-- Script de funcionamiento -->
     <script>
-        // PEGA AQUÍ ABAJO LA URL QUE COPIASTE DE GOOGLE APPS SCRIPT
         const API_URL = "https://script.google.com/macros/s/AKfycbzzO-131a-GqEjRapvcP76DPdBt4dqlHaLj2O-m_Dtnq7LZobhYLqOPptX__rN5y8Te/exec";
 
         let tasks = [];
@@ -103,21 +131,21 @@
                 if (col) {
                     counts[task.status]++;
                     const card = document.createElement('div');
-                    card.className = "bg-white p-3.5 rounded-lg shadow-sm border border-slate-200 cursor-grab flex flex-col gap-2 text-xs";
+                    card.className = "bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 hover:border-slate-600 p-3.5 rounded-xl shadow-sm cursor-grab active:cursor-grabbing flex flex-col gap-2 text-xs transition-all duration-150";
                     card.draggable = true;
                     card.id = task.id;
                     card.ondragstart = (e) => e.dataTransfer.setData('text/plain', task.id);
                     
                     card.innerHTML = `
-                        <div class="flex justify-between items-start font-semibold text-slate-800">
-                            <span>${task.title}</span>
-                            <span class="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-normal">${task.assignee}</span>
+                        <div class="flex justify-between items-start gap-2 font-semibold text-slate-200">
+                            <span class="leading-snug">${task.title}</span>
+                            <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-md font-medium shrink-0">${task.assignee}</span>
                         </div>
-                        <p class="text-slate-500">${task.description}</p>
-                        <div class="text-[10px] text-slate-400 flex justify-between border-t pt-1">
+                        <p class="text-slate-400 leading-relaxed">${task.description || ''}</p>
+                        <div class="text-[10px] text-slate-400 flex justify-between border-t border-slate-700/60 pt-2 mt-1">
                             <span>Inicio: ${task.startDate}</span><span>Fin: ${task.endDate}</span>
                         </div>
-                        ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-600 underline font-medium truncate">Ver entregable ↗</a>` : ''}
+                        ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-400 hover:text-indigo-300 underline font-medium truncate mt-0.5">Ver entregable ↗</a>` : ''}
                     `;
                     col.appendChild(card);
                 }
@@ -125,7 +153,6 @@
 
             for (let status in counts) {
                 let className = status.toLowerCase().replace(' ', '-').replace('á', 'a').replace('ó', 'o');
-                // Ajuste rápido para clases de conteo
                 if(status === 'Asignado a') className = 'asignado';
                 if(status === 'En progreso') className = 'progreso';
                 if(status === 'En revisión') className = 'revision';
