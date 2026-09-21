@@ -125,10 +125,9 @@
         </div>
     </div>
 
-    <!-- Script de Conexión y Lógica -->
+    <!-- Script de Lógica y Sincronización -->
     <script>
-        // PEGA AQUÍ TU URL CORRECTA DE GOOGLE APPS SCRIPT QUE TERMINA EN /exec
-        const API_URL = "https://script.google.com/macros/s/AKfycbz6N0_6zfFJsRdR2ENhwWMPewHsoxIMJL8fKylMdUaTnho7tUFaaBSJyW4EGl0joXeu/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxaz-1E-6sdgGs4yrtVyUEf8POc6TeodsOlW2ueGSeirbIUsuJqU3xZ-58JgyVNJdqy/exec";
 
         let tasks = [];
 
@@ -153,7 +152,6 @@
 
             const counts = { 'Backlog': 0, 'Asignado a': 0, 'En progreso': 0, 'En revisión': 0, 'Finalizado': 0 };
 
-            // Limpiar columnas
             Object.values(columns).forEach(col => col.innerHTML = '');
 
             tasks.forEach(task => {
@@ -179,7 +177,6 @@
                 }
             });
 
-            // Actualizar contadores visuales
             document.getElementById('count-Backlog').innerText = counts['Backlog'];
             document.getElementById('count-Asignado').innerText = counts['Asignado a'];
             document.getElementById('count-Progreso').innerText = counts['En progreso'];
@@ -198,18 +195,24 @@
                 task.status = newStatus;
                 renderBoard();
 
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'updateStatus', id: taskId, status: newStatus })
+                const params = new URLSearchParams({
+                    action: 'updateStatus',
+                    id: taskId,
+                    status: newStatus
                 });
+
+                try {
+                    await fetch(`${API_URL}?${params.toString()}`);
+                } catch (error) {
+                    console.error("Error al actualizar estado:", error);
+                }
             }
         }
 
         async function handleCreateTask(e) {
             e.preventDefault();
-            const newTask = {
+            
+            const params = new URLSearchParams({
                 action: 'createTask',
                 id: Date.now().toString(),
                 title: document.getElementById('taskTitle').value,
@@ -219,22 +222,20 @@
                 endDate: document.getElementById('taskEnd').value,
                 url: document.getElementById('taskUrl').value,
                 status: 'Backlog'
-            };
+            });
 
             closeModal();
             document.getElementById('taskForm').reset();
 
-            tasks.push(newTask);
-            renderBoard();
-
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newTask)
-            });
-
-            fetchTasks();
+            try {
+                // Envía la petición limpiamente por GET a Google Sheets
+                await fetch(`${API_URL}?${params.toString()}`);
+                
+                // Recargamos el tablero de inmediato para traer la tarea sincronizada
+                setTimeout(fetchTasks, 1000);
+            } catch (error) {
+                console.error("Error al crear tarea:", error);
+            }
         }
 
         function openModal() { document.getElementById('taskModal').classList.remove('hidden'); }
